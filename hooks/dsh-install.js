@@ -15,7 +15,10 @@ const {
   acknowledgeDshNotice,
 } = require("./dsh-notices");
 
-const BRIDGE_PACKAGE_NAME = "@dsh-external/dsh-clawd-bridge";
+const IS_GALAXY = process.env.GALAXY_VARIANT === "1";
+const BRIDGE_PACKAGE_NAME = IS_GALAXY
+  ? "@dsh-external/dsh-galaxy-bridge"
+  : "@dsh-external/dsh-clawd-bridge";
 const WEB_PROFILE_NAME = "web";
 const DESKTOP_PROFILE_NAME = "desktop";
 const DSH_PROFILE_NAMES = Object.freeze([WEB_PROFILE_NAME, DESKTOP_PROFILE_NAME]);
@@ -38,8 +41,8 @@ const DSH_RESTART_HINT = "DeepSeek Harness bridge verified on disk. Restart any 
 // same-name package does not hot-reload, so a plugin update (a generation
 // change) needs a desktop restart.
 const DSH_DESKTOP_RESTART_HINT = "DeepSeek Harness bridge verified on disk. The desktop app loads a newly added plugin while it runs; after a plugin update, restart the desktop app.";
-const MANAGED_OWNER = "clawd-on-desk";
-const MANIFEST_FILE = "clawd-manifest.json";
+const MANAGED_OWNER = IS_GALAXY ? "galaxy" : "clawd-on-desk";
+const MANIFEST_FILE = IS_GALAXY ? "galaxy-manifest.json" : "clawd-manifest.json";
 const MANIFEST_SCHEMA_VERSION = 1;
 const BRIDGE_PROTOCOL_VERSION = 1;
 // The one place that names concrete DSH releases. Each entry is the npm
@@ -245,7 +248,7 @@ function resolveManagedRoot(options = {}) {
     .digest("hex");
   return path.join(
     resolveCanonicalLocalPath(homeDir, options),
-    ".clawd",
+    IS_GALAXY ? ".galaxy" : ".clawd",
     "integrations",
     "deepseek-harness",
     "homes",
@@ -255,6 +258,26 @@ function resolveManagedRoot(options = {}) {
 
 function resolveBridgeSourceDir(baseDir = __dirname) {
   return asarUnpackedPath(path.resolve(baseDir, "dsh-clawd-bridge"));
+}
+
+function transformBridgeSource(relativePath, content) {
+  if (!IS_GALAXY) return content;
+  let source = Buffer.from(content).toString("utf8");
+  if (relativePath === "package.json") {
+    source = source.replace('"name": "@dsh-external/dsh-clawd-bridge"', '"name": "@dsh-external/dsh-galaxy-bridge"')
+      .replace("Forward public DeepSeek Harness session and approval events to Clawd on Desk", "Forward public DeepSeek Harness session and approval events to Galaxy");
+  } else if (relativePath === "cordis.patch.yml") {
+    source = source.replace("id: clawd-bridge", "id: galaxy-bridge")
+      .replace("@dsh-external/dsh-clawd-bridge", "@dsh-external/dsh-galaxy-bridge")
+      .replace("~/.clawd/runtime.json", "~/.galaxy/runtime.json");
+  } else if (relativePath === "lib/index.js") {
+    source = source.replace("export const name = 'dsh-clawd-bridge'", "export const name = 'dsh-galaxy-bridge'");
+  } else if (relativePath === "lib/clawd-client.js") {
+    source = source.replace("const SERVER_ID = 'clawd-on-desk'", "const SERVER_ID = 'galaxy'")
+      .replace("join(homedir(), '.clawd', 'runtime.json')", "join(homedir(), '.galaxy', 'runtime.json')")
+      .replace("[23333, 23334, 23335, 23336, 23337]", "[23433, 23434, 23435, 23436, 23437]");
+  }
+  return Buffer.from(source, "utf8");
 }
 
 async function exists(filePath) {
@@ -1144,7 +1167,7 @@ function computeExpectedSourceHashesSync(fsImpl, sourceDir) {
         ? fsImpl.lstatSync(filePath)
         : fsImpl.statSync(filePath);
       if (!stat.isFile() || (typeof stat.isSymbolicLink === "function" && stat.isSymbolicLink())) return null;
-      files.push({ relativePath, content: fsImpl.readFileSync(filePath) });
+      files.push({ relativePath, content: transformBridgeSource(relativePath, fsImpl.readFileSync(filePath)) });
     }
     const hashes = {};
     for (const family of DSH_VERSION_FAMILIES) {
@@ -2508,7 +2531,7 @@ async function readSourceBundle(options = {}) {
     if (!stat.isFile() || stat.isSymbolicLink()) {
       throw new Error(`DSH bridge source must be a regular file: ${filePath}`);
     }
-    files.push({ relativePath, content: await fsp.readFile(filePath) });
+    files.push({ relativePath, content: transformBridgeSource(relativePath, await fsp.readFile(filePath)) });
   }
   return { sourceDir, files, bundleHash: digestBridgeFiles(files, contract), contract };
 }

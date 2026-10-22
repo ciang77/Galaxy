@@ -135,7 +135,7 @@ const SCHEMA = {
   },
   size: {
     type: "string",
-    default: "P:9",
+    default: process.env.GALAXY_VARIANT === "1" ? "P:18" : "P:9",
     // Accept "S"/"M"/"L" (legacy) or "P:<num>" — full migration happens elsewhere.
     validate: (v) =>
       typeof v === "string" &&
@@ -398,7 +398,7 @@ const SCHEMA = {
     normalize: normalizeShortcuts,
   },
   // Theme
-  theme: { type: "string", default: "clawd" },
+  theme: { type: "string", default: process.env.GALAXY_VARIANT === "1" ? "galaxy" : "clawd" },
   // Per-theme color filter choice, e.g. { clawd: "matcha", cloudling: "mono" }.
   // Missing entries preserve the theme's native colors. The normalizer also
   // accepts the short-lived pre-detail-view string shape and seeds supported

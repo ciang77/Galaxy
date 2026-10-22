@@ -29,8 +29,9 @@ const workbuddy = require("./workbuddy");
 const traecode = require("./traecode");
 const grokBuild = require("./grok-build");
 const minimax = require("./minimax");
+const { isAgentAllowedForProduct } = require("../src/product-variant");
 
-const AGENTS = [
+const REGISTERED_AGENTS = [
   claudeCode,
   deepseekHarness,
   codex,
@@ -60,6 +61,7 @@ const AGENTS = [
   grokBuild,
   minimax,
 ];
+const AGENTS = REGISTERED_AGENTS.filter((agent) => isAgentAllowedForProduct(agent.id));
 const AGENT_MAP = new Map(AGENTS.map((a) => [a.id, a]));
 
 function namesForPlatform(agent, field) {
@@ -83,6 +85,7 @@ function collectProcessNames(field) {
 }
 
 module.exports = {
+  getAllRegisteredAgents: () => REGISTERED_AGENTS,
   getAllAgents: () => AGENTS,
   getAgent: (id) => AGENT_MAP.get(id),
 

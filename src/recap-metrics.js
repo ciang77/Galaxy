@@ -1,6 +1,6 @@
 "use strict";
 
-const { getAllAgents } = require("../agents/registry");
+const { getAllRegisteredAgents } = require("../agents/registry");
 
 const STANDARD_TOOL_START = Object.freeze(["PreToolUse"]);
 const STANDARD_COMPLETION = Object.freeze(["Stop"]);
@@ -141,7 +141,7 @@ function mapRecapMetrics(input) {
 }
 
 function assertRegistryCoverage() {
-  const registryIds = getAllAgents().map((agent) => agent.id).sort();
+  const registryIds = getAllRegisteredAgents().map((agent) => agent.id).sort();
   const policyIds = Object.keys(AGENT_METRIC_POLICIES).sort();
   if (JSON.stringify(registryIds) !== JSON.stringify(policyIds)) {
     throw new Error("recap metric policies must explicitly cover every registry agent");

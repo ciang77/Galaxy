@@ -982,7 +982,7 @@ function registerSettingsIpc(options = {}) {
   handle("settings:list-agents", () => {
     try {
       const snapshot = settingsController.getSnapshot();
-      const custom = Array.isArray(snapshot.customApplications)
+      const custom = process.env.GALAXY_VARIANT === "1" ? [] : Array.isArray(snapshot.customApplications)
         ? snapshot.customApplications.map((application) => {
           const port = getHookServerPort();
           const stateEvents = getRecentHookEvents({ agentId: application.id })

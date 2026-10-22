@@ -12,7 +12,7 @@ const {
 } = require("./recap-private-permissions");
 
 const SCHEMA_VERSION = 1;
-const DEFAULT_ROOT = path.join(os.homedir(), ".clawd", "recap-v1");
+const DEFAULT_ROOT = path.join(os.homedir(), process.env.GALAXY_VARIANT === "1" ? ".galaxy" : ".clawd", "recap-v1");
 const EVENT_RETENTION_DAYS = 14;
 const DAILY_RETENTION_DAYS = 400;
 const TEMP_FILE_TTL_MS = 24 * 60 * 60 * 1000;

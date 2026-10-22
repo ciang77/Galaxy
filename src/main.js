@@ -1,6 +1,20 @@
 const { app, BrowserWindow, Notification, screen, ipcMain, globalShortcut, nativeTheme, dialog, shell, nativeImage, powerSaveBlocker, powerMonitor, clipboard, safeStorage, net } = require("electron");
+const { getProductVariant } = require("./product-variant");
+const productVariant = getProductVariant(app.getName());
+if (productVariant.id === "galaxy") {
+  process.env.GALAXY_VARIANT = "1";
+  app.setName(productVariant.name);
+  const path = require("path");
+  app.setPath("userData", path.join(app.getPath("appData"), productVariant.userDataDirectoryName));
+  if (process.platform === "win32" && typeof app.setAppUserModelId === "function") {
+    app.setAppUserModelId(productVariant.appId);
+  }
+}
 const { maybeRunPackageKoffiSmoke } = require("./package-koffi-smoke");
 if (maybeRunPackageKoffiSmoke({ app, BrowserWindow })) {
+  return;
+}
+if (productVariant.id === "galaxy" && require("./galaxy-package-smoke")({ app, BrowserWindow })) {
   return;
 }
 // ── Linux/Wayland: relaunch under XWayland so the pet is draggable (issue #441) ──
@@ -222,7 +236,7 @@ const THEME_SWITCH_FADE_OUT_MS = 140;
 const THEME_SWITCH_FADE_IN_MS = 180;
 const THEME_SWITCH_FADE_FALLBACK_MS = 4000;
 
-applyWindowsAppUserModelId(app, process.platform);
+if (productVariant.id !== "galaxy") applyWindowsAppUserModelId(app, process.platform);
 
 
 // ── Windows: AllowSetForegroundWindow via FFI ──
@@ -351,7 +365,7 @@ const {
 const loginItemHelpers = require("./login-item");
 const { writeCodexAutoStartGate } = require("../hooks/server-config");
 const { createCodexAutoStartGateEvaluator } = require("./agent-gate");
-const PREFS_PATH = path.join(app.getPath("userData"), "clawd-prefs.json");
+const PREFS_PATH = path.join(app.getPath("userData"), productVariant.id === "galaxy" ? "galaxy-prefs.json" : "clawd-prefs.json");
 const _initialPrefsLoad = prefsModule.load(PREFS_PATH);
 // Recovery from readable invalid contents is writable only after the original
 // bytes are safely kept in .bak. That fallback is not user intent for this
@@ -571,7 +585,8 @@ const _settingsController = createSettingsController({
       // it settles (and any in-flight repair drains) before the generic cleaner
       // runs. hooks/cleanup-integrations.js records this precomputed result
       // instead of unregistering Claude a second time outside the queue.
-      const claudeCleanupResult = await _server.uninstallClaudeHooks({ source: "cleanup", automatic: false });
+      const claudeCleanupResult = productVariant.id === "galaxy" ? null
+        : await _server.uninstallClaudeHooks({ source: "cleanup", automatic: false });
       const { cleanupIntegrations } = require("../hooks/cleanup-integrations.js");
       return cleanupIntegrations({ ...options, backup: true, silent: true, claudeCleanupResult });
     },
@@ -5197,7 +5212,7 @@ const settingsIpcRuntime = registerSettingsIpc({
     _tutorial.open();
     return { status: "ok" };
   },
-  aboutHeroSvgPath: path.join(__dirname, "..", "assets", "svg", "clawd-about-hero.svg"),
+  aboutHeroSvgPath: path.join(__dirname, "..", "assets", "svg", productVariant.id === "galaxy" ? "galaxy-idle.svg" : "clawd-about-hero.svg"),
   getLanWsServer: () => _lanWss,
 });
 

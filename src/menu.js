@@ -223,10 +223,10 @@ module.exports = function initMenu(ctx) {
       nativeImage,
       platform: process.platform,
       templatePath: path.join(__dirname, "../assets/tray-iconTemplate.png"),
-      iconPath: path.join(__dirname, "../assets/icon.png"),
+      iconPath: path.join(__dirname, process.env.GALAXY_VARIANT === "1" ? "../assets/galaxy/icon.png" : "../assets/icon.png"),
     });
     ctx.tray = new Tray(icon);
-    ctx.tray.setToolTip("Clawd Desktop Pet");
+    ctx.tray.setToolTip(process.env.GALAXY_VARIANT === "1" ? "Galaxy" : "Clawd Desktop Pet");
     buildTrayMenu();
   }
 

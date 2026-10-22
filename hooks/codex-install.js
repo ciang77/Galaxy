@@ -16,7 +16,8 @@ const {
   unregisterCodexCommandHooks,
 } = require("./codex-install-utils");
 
-const MARKER = "codex-hook.js";
+const IS_GALAXY = process.env.GALAXY_VARIANT === "1";
+const MARKER = IS_GALAXY ? "galaxy-codex-bridge.js" : "codex-hook.js";
 const CODEX_OFFICIAL_HOOK_EVENTS = CODEX_HOOK_EVENTS;
 
 function buildCodexStateHookCommand(nodeBin, hookScript, platform = process.platform) {
@@ -35,7 +36,7 @@ function registerCodexHooks(options = {}) {
     // flags the former inline data-sidecar dispatcher. In-place app upgrades
     // keep the direct path stable, while a real Node/hook path change requires
     // a fresh Codex /hooks review.
-    stableLauncher: options.remote !== true && options.stableLauncher !== false,
+    stableLauncher: !IS_GALAXY && options.remote !== true && options.stableLauncher !== false,
   });
 }
 
@@ -45,7 +46,9 @@ function unregisterCodexHooks(options = {}) {
     marker: MARKER,
     events: CODEX_OFFICIAL_HOOK_EVENTS,
   });
-  const stableLauncher = removeStableCodexHookLauncher(options);
+  const stableLauncher = IS_GALAXY
+    ? { changed: false, skipped: true, reason: "galaxy-does-not-own-clawd-launcher" }
+    : removeStableCodexHookLauncher(options);
   return {
     ...result,
     changed: result.changed === true || stableLauncher.changed,
@@ -54,6 +57,7 @@ function unregisterCodexHooks(options = {}) {
 }
 
 module.exports = {
+  MARKER,
   DEFAULT_PARENT_DIR,
   DEFAULT_CONFIG_PATH,
   DEFAULT_FEATURES_CONFIG,

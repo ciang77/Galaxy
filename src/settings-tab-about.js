@@ -305,7 +305,7 @@
 
     const title = document.createElement("h2");
     title.className = "about-title";
-    title.textContent = "Clawd on Desk";
+    title.textContent = window.settingsAPI && window.settingsAPI.productVariant === "galaxy" ? "Galaxy" : "Clawd on Desk";
 
     const tagline = document.createElement("p");
     tagline.className = "about-tagline";
@@ -404,7 +404,8 @@
       vv.className = "about-info-value";
       vv.textContent = "v" + (safe.version || "?");
       vvWrap.appendChild(vv);
-      if (safe.pendingUpdateVersion) {
+      const updatesEnabled = !window.settingsAPI || window.settingsAPI.productVariant !== "galaxy";
+      if (updatesEnabled && safe.pendingUpdateVersion) {
         const hint = document.createElement("span");
         hint.className = "about-update-hint";
         hint.textContent = "· " + t("aboutUpdateAvailableHint").replace(
@@ -421,6 +422,10 @@
       updateBtn.className = "about-check-update-btn";
       const updateStatusHost = document.createElement("div");
       updateStatusHost.className = "about-update-status-host";
+      if (!updatesEnabled) {
+        updateBtn.hidden = true;
+        updateStatusHost.hidden = true;
+      }
 
       function applyUpdateCheckStatus(snapshot) {
         const normalized = normalizeUpdateCheckSnapshot(snapshot);
@@ -468,6 +473,7 @@
 
       const autoUpdateRow = document.createElement("div");
       autoUpdateRow.className = "about-info-row";
+      if (!updatesEnabled) autoUpdateRow.hidden = true;
       const autoUpdateLabelWrap = document.createElement("div");
       autoUpdateLabelWrap.className = "about-info-label";
       const autoUpdateLabel = document.createElement("div");

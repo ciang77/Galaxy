@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "name": "Galaxy",
+  "author": "Galaxy",
+  "version": "1.0.0",
+  "description": "A silver-haired companion with teal accents, drawn in the original reference illustration style.",
+  "customization": {
+    "petTint": false
+  },
+  "viewBox": {
+    "x": 0,
+    "y": 0,
+    "width": 100,
+    "height": 100
+  },
+  "layout": {
+    "contentBox": {
+      "x": 0,
+      "y": 0,
+      "width": 100,
+      "height": 100
+    },
+    "centerX": 50,
+    "baselineY": 100,
+    "visibleHeightRatio": 0.94,
+    "baselineBottomRatio": 0.02
+  },
+  "eyeTracking": {
+    "enabled": false,
+    "states": []
+  },
+  "states": {
+    "idle": [
+      "galaxy-idle.svg"
+    ],
+    "thinking": [
+      "galaxy-thinking.svg"
+    ],
+    "working": [
+      "galaxy-working.svg"
+    ],
+    "juggling": [
+      "galaxy-working.svg"
+    ],
+    "attention": [
+      "galaxy-wave.svg"
+    ],
+    "notification": [
+      "galaxy-complete.svg"
+    ],
+    "error": [
+      "galaxy-alert.svg"
+    ],
+    "sleeping": [
+      "galaxy-sleeping.svg"
+    ],
+    "waking": [
+      "galaxy-waking.svg"
+    ]
+  },
+  "sleepSequence": {
+    "mode": "direct"
+  },
+  "workingTiers": [
+    {
+      "minSessions": 1,
+      "file": "galaxy-working.svg"
+    }
+  ],
+  "timings": {
+    "mouseIdleTimeout": 20000,
+    "mouseSleepTimeout": 60000
+  },
+  "hitBoxes": {
+    "default": {
+      "x": 14,
+      "y": 12,
+      "w": 72,
+      "h": 85
+    },
+    "sleeping": {
+      "x": 9,
+      "y": 42,
+      "w": 82,
+      "h": 55
+    }
+  },
+  "sleepingHitboxFiles": [
+    "galaxy-sleeping.svg"
+  ],
+  "reactions": {
+    "drag": {
+      "file": "galaxy-wave.svg"
+    },
+    "clickLeft": {
+      "file": "galaxy-wave.svg",
+      "duration": 1800
+    },
+    "clickRight": {
+      "file": "galaxy-wave.svg",
+      "duration": 1800
+    },
+    "double": {
+      "files": [
+        "galaxy-complete.svg"
+      ],
+      "duration": 2200
+    }
+  },
+  "miniMode": {
+    "supported": true,
+    "viewBox": {
+      "x": 0,
+      "y": 0,
+      "width": 100,
+      "height": 100
+    },
+    "states": {
+      "mini-idle": [
+        "galaxy-idle.svg"
+      ],
+      "mini-enter": [
+        "galaxy-wave.svg"
+      ],
+      "mini-enter-sleep": [
+        "galaxy-sleeping.svg"
+      ],
+      "mini-crabwalk": [
+        "galaxy-idle.svg"
+      ],
+      "mini-peek": [
+        "galaxy-wave.svg"
+      ],
+      "mini-alert": [
+        "galaxy-alert.svg"
+      ],
+      "mini-happy": [
+        "galaxy-complete.svg"
+      ],
+      "mini-sleep": [
+        "galaxy-sleeping.svg"
+      ],
+      "mini-working": [
+        "galaxy-working.svg"
+      ]
+    }
+  },
+  "objectScale": {
+    "imgWidthRatio": 1.25,
+    "widthRatio": 1.25,
+    "heightRatio": 1.25,
+    "offsetX": -0.125,
+    "offsetY": 0
+  },
+  "rendering": {
+    "objectChannelFiles": [
+      "galaxy-idle.svg",
+      "galaxy-thinking.svg",
+      "galaxy-working.svg",
+      "galaxy-complete.svg",
+      "galaxy-alert.svg",
+      "galaxy-sleeping.svg",
+      "galaxy-waking.svg",
+      "galaxy-wave.svg"
+    ],
+    "lowPowerStaticImageOverrides": {
+      "idle": {
+        "from": "galaxy-idle.svg",
+        "to": "galaxy-idle.png"
+      },
+      "thinking": {
+        "from": "galaxy-thinking.svg",
+        "to": "galaxy-thinking.png"
+      },
+      "working": {
+        "from": "galaxy-working.svg",
+        "to": "galaxy-working.png"
+      },
+      "juggling": {
+        "from": "galaxy-working.svg",
+        "to": "galaxy-working.png"
+      },
+      "attention": {
+        "from": "galaxy-wave.svg",
+        "to": "galaxy-wave.png"
+      },
+      "notification": {
+        "from": "galaxy-complete.svg",
+        "to": "galaxy-complete.png"
+      },
+      "error": {
+        "from": "galaxy-alert.svg",
+        "to": "galaxy-alert.png"
+      },
+      "sleeping": {
+        "from": "galaxy-sleeping.svg",
+        "to": "galaxy-sleeping.png"
+      },
+      "waking": {
+        "from": "galaxy-waking.svg",
+        "to": "galaxy-waking.png"
+      }
+    }
+  }
+}

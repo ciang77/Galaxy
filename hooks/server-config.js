@@ -3,9 +3,9 @@ const http = require("http");
 const os = require("os");
 const path = require("path");
 
-const CLAWD_SERVER_ID = "clawd-on-desk";
+const CLAWD_SERVER_ID = process.env.GALAXY_VARIANT === "1" ? "galaxy" : "clawd-on-desk";
 const CLAWD_SERVER_HEADER = "x-clawd-server";
-const DEFAULT_SERVER_PORT = 23333;
+const DEFAULT_SERVER_PORT = process.env.GALAXY_VARIANT === "1" ? 23433 : 23333;
 const SERVER_PORT_COUNT = 5;
 const SERVER_PORTS = Array.from({ length: SERVER_PORT_COUNT }, (_, i) => DEFAULT_SERVER_PORT + i);
 const STATE_PATH = "/state";
@@ -42,12 +42,12 @@ function normalizePort(value) {
 
 function defaultRuntimeConfigPath(options = {}) {
   const homeDir = typeof options.homeDir === "string" ? options.homeDir : os.homedir();
-  return path.join(homeDir, ".clawd", "runtime.json");
+  return path.join(homeDir, process.env.GALAXY_VARIANT === "1" ? ".galaxy" : ".clawd", "runtime.json");
 }
 
 function defaultCodexAutoStartGatePath(options = {}) {
   const homeDir = typeof options.homeDir === "string" ? options.homeDir : os.homedir();
-  return path.join(homeDir, ".clawd", CODEX_AUTO_START_GATE_FILENAME);
+  return path.join(homeDir, process.env.GALAXY_VARIANT === "1" ? ".galaxy" : ".clawd", CODEX_AUTO_START_GATE_FILENAME);
 }
 
 function readCodexAutoStartGate(options = {}) {

@@ -2671,7 +2671,7 @@ function extensionIntegrationId(descriptor) {
 function isExtensionManagedMarker(value, integrationId) {
   return !!(
     value
-    && value.app === "clawd-on-desk"
+    && value.app === (process.env.GALAXY_VARIANT === "1" && integrationId === "pi" ? "galaxy" : "clawd-on-desk")
     && value.integration === integrationId
     && value.managed === true
   );

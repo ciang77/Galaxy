@@ -3,7 +3,7 @@
 const path = require("path");
 
 const WINDOWS_APP_USER_MODEL_ID = "com.clawd.on-desk";
-const SETTINGS_WINDOW_TITLE = "Clawd Settings";
+const SETTINGS_WINDOW_TITLE = process.env.GALAXY_VARIANT === "1" ? "Galaxy Settings" : "Clawd Settings";
 const SETTINGS_WINDOW_LAUNCH_ARG = "--open-settings-window";
 
 function quoteWindowsCommandArg(value) {
@@ -27,6 +27,10 @@ function getSettingsWindowIconPath({
 
   const hasFile = typeof existsSync === "function" ? existsSync : () => true;
   const candidates = [];
+  if (process.env.GALAXY_VARIANT === "1") {
+    candidates.push(isPackaged ? path.join(resourcesPath || "", "icon.ico")
+      : path.join(appDir || "", "assets", "galaxy", "icon.png"));
+  }
 
   if (isPackaged) {
     candidates.push(
@@ -71,6 +75,8 @@ function getSettingsWindowTaskbarDetails({
   appDir,
   execPath,
   appPath,
+  appId = process.env.GALAXY_VARIANT === "1" ? "com.galaxy.deskpet" : WINDOWS_APP_USER_MODEL_ID,
+  productName = process.env.GALAXY_VARIANT === "1" ? "Galaxy" : "Clawd Settings",
   existsSync,
 }) {
   if (platform !== "win32") return null;
@@ -98,18 +104,18 @@ function getSettingsWindowTaskbarDetails({
     .join(" ");
 
   return {
-    appId: WINDOWS_APP_USER_MODEL_ID,
+    appId,
     appIconPath,
     appIconIndex: 0,
     relaunchCommand,
-    relaunchDisplayName: SETTINGS_WINDOW_TITLE,
+    relaunchDisplayName: productName,
   };
 }
 
 function applyWindowsAppUserModelId(app, platform = process.platform) {
   if (platform !== "win32") return;
   if (!app || typeof app.setAppUserModelId !== "function") return;
-  app.setAppUserModelId(WINDOWS_APP_USER_MODEL_ID);
+  app.setAppUserModelId(process.env.GALAXY_VARIANT === "1" ? "com.galaxy.deskpet" : WINDOWS_APP_USER_MODEL_ID);
 }
 
 module.exports = {

@@ -93,7 +93,7 @@ function getRecoveryDir(options = {}) {
   if (typeof options.recoveryDir === "string" && options.recoveryDir) {
     return path.resolve(options.recoveryDir);
   }
-  return path.join(os.homedir(), ".clawd", LEASE_DIR_NAME);
+  return path.join(os.homedir(), process.env.GALAXY_VARIANT === "1" ? ".galaxy" : ".clawd", LEASE_DIR_NAME);
 }
 
 function ensureRecoveryDir(options = {}) {

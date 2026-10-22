@@ -8,7 +8,7 @@ const defaultCodexPetAdapter = require("./codex-pet-adapter");
 const defaultCodexPetImporter = require("./codex-pet-importer");
 
 const REGISTER_PROTOCOL_DEV_ARG = "--register-protocol";
-const CLAWD_PROTOCOL_SCHEME = "clawd";
+const CLAWD_PROTOCOL_SCHEME = process.env.GALAXY_VARIANT === "1" ? "galaxy" : "clawd";
 
 function emptyCodexPetSyncSummary(overrides = {}) {
   return {
@@ -84,7 +84,10 @@ function isFsPathInsideDir(rootDir, candidatePath, pathModule = defaultPath) {
 
 function extractClawdProtocolUrls(argv) {
   if (!Array.isArray(argv)) return [];
-  return argv.filter((arg) => typeof arg === "string" && arg.toLowerCase().startsWith(`${CLAWD_PROTOCOL_SCHEME}:`));
+  return argv.filter((arg) => typeof arg === "string" && (
+    arg.toLowerCase().startsWith(`${CLAWD_PROTOCOL_SCHEME}:`)
+    || (process.env.GALAXY_VARIANT === "1" && arg.toLowerCase().startsWith("clawd:"))
+  ));
 }
 
 function requiredDependency(value, name) {

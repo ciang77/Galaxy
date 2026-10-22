@@ -95,6 +95,7 @@ const HOOK_FILES = [
   "install.js",
   "uninstall.js",
   "codex-hook.js",
+  "galaxy-codex-bridge.js",
   "codex-originator.js",
   "codex-assistant-output.js",
   "codex-user-input.js",
@@ -951,7 +952,7 @@ function buildInstallerVerificationCommand(txnStep, layout, remoteNode) {
       file: path.posix.join(layout.codexHome, "hooks.json"),
       commandFields: ["command"],
       commandMarkers: [
-        "codex-hook.js",
+        process.env.GALAXY_VARIANT === "1" ? "galaxy-codex-bridge.js" : "codex-hook.js",
         layout.identityFile,
         layout.codexHome,
       ],
@@ -1627,9 +1628,9 @@ async function secureDeploy({
 
     const envPrefix = buildRemoteInstallerEnv(layout, profile.remotePermissionTransport);
     const installers = [
-      ["installClaude", "install-claude", "install.js", profile.chainStatusline ? ["--remote", "--chain-existing"] : ["--remote"], componentPresence.claudePresent],
+      ["installClaude", "install-claude", "install.js", profile.chainStatusline ? ["--remote", "--chain-existing"] : ["--remote"], process.env.GALAXY_VARIANT !== "1" && componentPresence.claudePresent],
       ["installCodex", "install-codex", "codex-install.js", ["--remote"], componentPresence.codexPresent],
-      ["installCopilot", "install-copilot", "copilot-install.js", ["--remote"], componentPresence.copilotPresent],
+      ["installCopilot", "install-copilot", "copilot-install.js", ["--remote"], process.env.GALAXY_VARIANT !== "1" && componentPresence.copilotPresent],
     ];
     for (const [txnStep, progressStep, script, argv, present] of installers) {
       progress(progressStep, "start");
@@ -1666,7 +1667,7 @@ async function secureDeploy({
       progress(progressStep, "ok");
     }
 
-    if (!componentPresence.claudePresent) {
+    if (process.env.GALAXY_VARIANT === "1" || !componentPresence.claudePresent) {
       await recordStep(
         "claudePermission",
         "not-applicable",
@@ -1773,7 +1774,7 @@ async function secureDeploy({
     const hermesTargets = Array.isArray(componentPresence.hermesTargets)
       ? componentPresence.hermesTargets
       : [];
-    if (componentPresence.hermesPresent !== true || !remoteHermesHome || hermesTargets.length === 0) {
+    if (process.env.GALAXY_VARIANT === "1" || componentPresence.hermesPresent !== true || !remoteHermesHome || hermesTargets.length === 0) {
       progress("install-hermes", "ok", "not applicable");
     } else {
       // Ownership gate first: a foreign or symlinked plugin directory fails
@@ -2221,6 +2222,9 @@ async function legacyStopCodexMonitor({ profile, runtime = null, deps = {} }) {
 // force a full redeploy on every reconnect. Best-effort by design — the
 // host may already be unreachable at delete time.
 async function legacyUninstallRemoteIntegrations({ profile, runtime = null, deps = {} }) {
+  if (process.env.GALAXY_VARIANT === "1") {
+    return { ok: true, skipped: true, reason: "galaxy-does-not-own-legacy-clawd-deployments" };
+  }
   const spawn = deps.spawn || childProcess.spawn;
   let remoteNode = deps.nodeBin;
   if (!remoteNode) {
@@ -2465,16 +2469,16 @@ async function secureUninstallRemoteIntegrations({
         const scriptPath = path.posix.join(layout.claudeHooksDir, script);
         return `if [ -f ${quoteForPosixShellArg(scriptPath)} ]; then ${envPrefix} ${buildRemoteHookNodeCommand(remoteNode, script, argv, { hooksDir: layout.claudeHooksDir })};${whenAbsent ? ` else ${whenAbsent};` : ""} fi`;
       };
-      const hermesCommand = resolveRemoteHermesHome(layout)
+      const hermesCommand = process.env.GALAXY_VARIANT !== "1" && resolveRemoteHermesHome(layout)
         ? optionalInstaller("hermes-install.js", ["--uninstall", "--remote", "--json"],
           `printf '%s\\n' ${quoteForPosixShellArg(HERMES_RESULT_SENTINEL + JSON.stringify({ schemaVersion: 1, operation: "uninstall", status: "ok", remote: true, targets: [], skipped: "installer-absent" }))}`)
         : null;
       let hermes = null;
       const commands = [
         secureMonitorStopCommand(layout),
-        optionalInstaller("uninstall.js", []),
+        ...(process.env.GALAXY_VARIANT === "1" ? [] : [optionalInstaller("uninstall.js", [])]),
         optionalInstaller("codex-install.js", ["--uninstall"]),
-        optionalInstaller("copilot-install.js", ["--uninstall"]),
+        ...(process.env.GALAXY_VARIANT === "1" ? [] : [optionalInstaller("copilot-install.js", ["--uninstall"])]),
         // Runs before the hook payload is removed, under the same lease and
         // fence. The installer discovers its own targets from HERMES_HOME
         // (exported by buildRemoteInstallerEnv) and removes exactly the

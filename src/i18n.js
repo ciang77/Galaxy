@@ -3634,7 +3634,8 @@ function createTranslator(getLang) {
   return function t(key) {
     const lang = getLang();
     const dict = i18n[lang] || i18n.en;
-    return dict[key] || key;
+    const text = dict[key] || key;
+    return process.env.GALAXY_VARIANT === "1" ? text.replace(/Clawd on Desk|Clawd/g, "Galaxy") : text;
   };
 }
 

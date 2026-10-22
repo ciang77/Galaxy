@@ -80,7 +80,7 @@ const UNKNOWN_STRIKES_LIMIT = 3;
 const FORWARD_RECOVERY_FAILURE_LIMIT = 4;
 
 const CLAWD_SERVER_HEADER = "x-clawd-server";
-const CLAWD_SERVER_ID = "clawd-on-desk";
+const CLAWD_SERVER_ID = process.env.GALAXY_VARIANT === "1" ? "galaxy" : "clawd-on-desk";
 const ROUTING_NONCE_HEADER = "x-clawd-routing-nonce";
 
 // ── Detect ssh client ──

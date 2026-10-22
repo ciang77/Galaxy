@@ -1,4 +1,5 @@
 "use strict";
+const { isAgentAllowedForProduct } = require("./product-variant");
 
 function hasPositiveCount(value) {
   return Number.isFinite(value) && value > 0;
@@ -745,6 +746,7 @@ function createIntegrationSyncRuntime(options = {}) {
   }
 
   function syncIntegrationForAgent(agentId, options = {}) {
+    if (!isAgentAllowedForProduct(agentId)) return false;
     if (agentId === "claude-code") {
       if (!shouldManageClaudeHooks()) return false;
       const result = syncClawdHooks(options);
@@ -777,6 +779,7 @@ function createIntegrationSyncRuntime(options = {}) {
   }
 
   function repairIntegrationForAgent(agentId, options = {}) {
+    if (!isAgentAllowedForProduct(agentId)) return false;
     if (agentId === "claude-code") {
       // Doctor Fix only runs once claude-code is already confirmed installed
       // and enabled (checked by the caller before invoking repair) — that
@@ -808,6 +811,7 @@ function createIntegrationSyncRuntime(options = {}) {
   }
 
   function uninstallIntegrationForAgent(agentId) {
+    if (!isAgentAllowedForProduct(agentId)) return false;
     try {
       if (
         ctx.uninstallIntegrationImpls
@@ -852,7 +856,7 @@ function createIntegrationSyncRuntime(options = {}) {
           err && err.message ? err.message : err
         ));
     }
-    if (shouldManageClaudeHooks() && shouldSyncAgentIntegration("claude-code")) {
+    if (isAgentAllowedForProduct("claude-code") && shouldManageClaudeHooks() && shouldSyncAgentIntegration("claude-code")) {
       const result = syncClawdHooks({ source: "startup", automatic: true });
       if (result && typeof result === "object" && typeof result.then === "function") {
         result.then(() => startClaudeSettingsWatcher());
@@ -863,7 +867,7 @@ function createIntegrationSyncRuntime(options = {}) {
     // Other agents' syncs are independent files and run in parallel — they do
     // not wait for Claude's (possibly queued/async) sync to settle.
     for (const [agentId, sync] of Object.entries(AGENT_INTEGRATION_SYNCERS)) {
-      if (shouldSyncAgentIntegration(agentId)) sync(readAgentIntegrationOptions(agentId));
+      if (isAgentAllowedForProduct(agentId) && shouldSyncAgentIntegration(agentId)) sync(readAgentIntegrationOptions(agentId));
     }
   }
 

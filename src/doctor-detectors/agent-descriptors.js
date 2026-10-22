@@ -2,6 +2,7 @@
 
 const path = require("path");
 const { getAgent } = require("../../agents/registry");
+const { isAgentAllowedForProduct } = require("../product-variant");
 const { getFamilyConfig } = require("../../agents/opencode-family");
 
 const claude = require("../../hooks/install");
@@ -63,7 +64,7 @@ const AGENT_DESCRIPTORS = Object.freeze([
     configPath: codex.DEFAULT_CONFIG_PATH,
     configMode: "file",
     autoInstall: true,
-    marker: "codex-hook.js",
+    marker: codex.MARKER || "codex-hook.js",
     nested: true,
     supplementary: {
       key: "hooks",
@@ -470,7 +471,7 @@ const AGENT_DESCRIPTORS = Object.freeze([
     managedFiles: [minimax.OWNER_MARKER_FILE, ".claude-plugin/plugin.json", "hooks/hooks.json"],
     hookEvents: minimax.MINIMAX_HOOK_EVENTS,
   }),
-]);
+].filter((descriptor) => isAgentAllowedForProduct(descriptor.agentId)));
 
 function getAgentDescriptors() {
   return AGENT_DESCRIPTORS.map((descriptor) => ({ ...descriptor }));

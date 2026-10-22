@@ -493,6 +493,9 @@ function setAgentCustomDiscoveryPaths(payload, deps = {}) {
 }
 
 function addCustomApplication(payload, deps = {}) {
+  if (process.env.GALAXY_VARIANT === "1") {
+    return { status: "error", message: "Custom Agents are not available in Galaxy" };
+  }
   if (!payload || typeof payload !== "object" || typeof payload.path !== "string") {
     return { status: "error", message: "addCustomApplication requires a path" };
   }

@@ -38,7 +38,8 @@ const { LOCAL_SESSION_PROFILE_ID } = require("./session-key");
 // coexistence window. New secure Remote SSH hooks use one pinned port and
 // never scan this list, but the constrained range preserves predictable
 // validation, diagnostics, and downgrade behavior.
-const REMOTE_FORWARD_PORTS = [23333, 23334, 23335, 23336, 23337];
+const REMOTE_FORWARD_PORTS = process.env.GALAXY_VARIANT === "1"
+  ? [23433, 23434, 23435, 23436, 23437] : [23333, 23334, 23335, 23336, 23337];
 
 const HOST_BARE_RE = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
 const HOST_USER_RE = /^[a-zA-Z0-9][a-zA-Z0-9._-]*@[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
@@ -340,7 +341,7 @@ function sanitizeManagedDeployTarget(raw) {
     identityFile: typeof raw.identityFile === "string" && raw.identityFile.length > 0
       ? raw.identityFile
       : undefined,
-    remoteForwardPort: Number.isInteger(raw.remoteForwardPort) ? raw.remoteForwardPort : 23333,
+    remoteForwardPort: Number.isInteger(raw.remoteForwardPort) ? raw.remoteForwardPort : REMOTE_FORWARD_PORTS[0],
     hostPrefix: typeof raw.hostPrefix === "string" && raw.hostPrefix.length > 0
       ? raw.hostPrefix
       : undefined,
@@ -634,7 +635,7 @@ function sanitizeProfile(raw) {
     identityFile: typeof raw.identityFile === "string" && raw.identityFile.length > 0
       ? raw.identityFile
       : undefined,
-    remoteForwardPort: Number.isInteger(raw.remoteForwardPort) ? raw.remoteForwardPort : 23333,
+    remoteForwardPort: Number.isInteger(raw.remoteForwardPort) ? raw.remoteForwardPort : REMOTE_FORWARD_PORTS[0],
     runtimeMode: runtimeIdentity.runtimeMode,
     runtimeKey: runtimeIdentity.runtimeKey,
     layoutVersion: REMOTE_LAYOUT_VERSION,

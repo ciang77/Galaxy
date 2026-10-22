@@ -1,5 +1,7 @@
 node_modules/
 dist/
+dist-galaxy/
+dist-galaxy-build/
 .env
 __pycache__/
 *.pyc
@@ -60,6 +62,12 @@ docs/**
 !docs/project/agent-runtime-architecture.md
 !docs/project/release-process.md
 !docs/project/theme-state-ui.md
+!docs/guides/galaxy.md
+!docs/superpowers/
+!docs/superpowers/specs/
+!docs/superpowers/specs/2026-10-21-galaxy-desktop-pet-design.md
+!docs/superpowers/plans/
+!docs/superpowers/plans/2026-10-21-galaxy-desktop-pet.md
 !docs/cloudling/
 !docs/cloudling/specs/
 !docs/cloudling/specs/core-states.md
@@ -121,6 +129,10 @@ logs/
 
 # GIF recording tools (not part of main project)
 scripts/*
+!scripts/build-galaxy.js
+!scripts/build-galaxy-assets.ps1
+!scripts/build-galaxy-visuals.js
+!scripts/smoke-galaxy.js
 # Deterministic source-backed macOS tray asset generator
 !scripts/generate-mac-tray-icons.js
 !scripts/generate-readme-contributors.js

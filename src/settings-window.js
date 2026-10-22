@@ -194,6 +194,8 @@ function createSettingsWindowRuntime(options = {}) {
       appDir,
       execPath,
       appPath: app.getAppPath(),
+      appId: process.env.GALAXY_VARIANT === "1" ? "com.galaxy.deskpet" : undefined,
+      productName: process.env.GALAXY_VARIANT === "1" ? "Galaxy" : undefined,
       existsSync: fs.existsSync,
     });
   }
@@ -472,6 +474,7 @@ function createSettingsWindowRuntime(options = {}) {
         // Sandboxed preloads can't require app modules; pass build-time flags by value.
         additionalArguments: [
           `--discord-default-app-id-present=${discordDefaultAppIdPresent ? "1" : "0"}`,
+          ...(process.env.GALAXY_VARIANT === "1" ? ["--product-variant=galaxy"] : []),
         ],
       },
     };

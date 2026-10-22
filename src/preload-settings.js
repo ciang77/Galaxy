@@ -39,6 +39,11 @@ const DISCORD_DEFAULT_APP_ID_FLAG = "--discord-default-app-id-present=";
 const discordDefaultAppIdArg = process.argv.find((a) => a.startsWith(DISCORD_DEFAULT_APP_ID_FLAG));
 const discordDefaultAppIdPresent =
   !!discordDefaultAppIdArg && discordDefaultAppIdArg.slice(DISCORD_DEFAULT_APP_ID_FLAG.length) === "1";
+const PRODUCT_VARIANT_FLAG = "--product-variant=";
+const productVariantArg = process.argv.find((arg) => arg.startsWith(PRODUCT_VARIANT_FLAG));
+const productVariant = productVariantArg && productVariantArg.slice(PRODUCT_VARIANT_FLAG.length) === "galaxy"
+  ? "galaxy"
+  : "clawd";
 
 const listeners = new Set();
 const shortcutFailureListeners = new Set();
@@ -126,6 +131,7 @@ ipcRenderer.on("officialTheme:progress", (_event, payload) => {
 });
 
 contextBridge.exposeInMainWorld("settingsAPI", {
+  productVariant,
   // Capability flag: true when a default Discord App ID is hardcoded (maintainer-
   // shipped), so the presence enable switch can be ready without a user-saved App ID.
   discordDefaultAppIdPresent,

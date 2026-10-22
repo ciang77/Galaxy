@@ -8,7 +8,8 @@ const childProcess = require("child_process");
 const { asarUnpackedPath, writeJsonAtomic } = require("./json-utils");
 const { resolveNodeBin } = require("./server-config");
 
-const EXTENSION_DIR_NAME = "clawd-on-desk";
+const IS_GALAXY = process.env.GALAXY_VARIANT === "1";
+const EXTENSION_DIR_NAME = IS_GALAXY ? "galaxy-desktop-pet" : "clawd-on-desk";
 const EXTENSION_FILE = "index.ts";
 const CORE_FILE = "pi-extension-core.js";
 const MARKER_FILE = ".clawd-managed.json";
@@ -62,7 +63,7 @@ function readJsonIfPresent(filePath, fsImpl = fs) {
 function isManagedMarker(value) {
   return !!(
     value
-    && value.app === "clawd-on-desk"
+    && value.app === (IS_GALAXY ? "galaxy" : "clawd-on-desk")
     && value.integration === "pi"
     && value.managed === true
   );
@@ -70,7 +71,7 @@ function isManagedMarker(value) {
 
 function buildMarker() {
   return {
-    app: "clawd-on-desk",
+    app: IS_GALAXY ? "galaxy" : "clawd-on-desk",
     integration: "pi",
     managed: true,
     version: 1,
@@ -141,10 +142,17 @@ function readSourceFiles(options = {}) {
   const sourceDir = options.sourceDir || __dirname;
   const extensionPath = options.extensionSourcePath || resolveSourcePath("pi-extension.ts", sourceDir);
   const corePath = options.coreSourcePath || resolveSourcePath(CORE_FILE, sourceDir);
+  let extensionText = fs.readFileSync(extensionPath, "utf8");
+  if (IS_GALAXY) {
+    extensionText = extensionText.replace(
+      'const IS_GALAXY = process.env.GALAXY_VARIANT === "1";',
+      "const IS_GALAXY = true;"
+    );
+  }
   return {
     extensionPath,
     corePath,
-    extensionText: fs.readFileSync(extensionPath, "utf8"),
+    extensionText,
     coreText: fs.readFileSync(corePath, "utf8"),
   };
 }

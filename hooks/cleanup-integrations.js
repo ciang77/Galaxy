@@ -40,7 +40,8 @@ const {
 } = require("./minimax-install");
 const { unregisterDeepSeekHarness } = require("./dsh-install");
 
-const CODEX_MARKERS = ["codex-hook.js", "codex-debug-hook.js"];
+const IS_GALAXY = process.env.GALAXY_VARIANT === "1";
+const CODEX_MARKERS = IS_GALAXY ? ["galaxy-codex-bridge.js"] : ["codex-hook.js", "codex-debug-hook.js"];
 
 const MANAGED_AGENT_IDS = Object.freeze([
   "claude-code",
@@ -71,7 +72,7 @@ const MANAGED_AGENT_IDS = Object.freeze([
   "grok-build",
   "traecode",
   "minimax",
-]);
+].filter((id) => !IS_GALAXY || ["codex", "pi", "deepseek-harness"].includes(id)));
 
 const AGENT_DISPLAY_NAMES = Object.freeze({
   "claude-code": "Claude Code",
@@ -400,7 +401,7 @@ function unregisterClaudeIntegration(options = {}) {
 
 function unregisterCodexIntegration(options = {}) {
   const hooks = unregisterCodexCommandHooks(options);
-  const stableLauncher = removeStableCodexHookLauncher(options);
+  const stableLauncher = IS_GALAXY ? { changed: false } : removeStableCodexHookLauncher(options);
   return {
     ...hooks,
     changed: changedFromResult(hooks) || stableLauncher.changed,

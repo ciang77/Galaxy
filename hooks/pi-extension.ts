@@ -8,12 +8,13 @@ import coreModule from "./pi-extension-core.js";
 
 const core = ((coreModule as any).default || coreModule) as any;
 
-const CLAWD_SERVER_ID = "clawd-on-desk";
+const IS_GALAXY = process.env.GALAXY_VARIANT === "1";
+const CLAWD_SERVER_ID = IS_GALAXY ? "galaxy" : "clawd-on-desk";
 const CLAWD_SERVER_HEADER = "x-clawd-server";
 const STATE_PATH = "/state";
-const DEFAULT_SERVER_PORT = 23333;
-const SERVER_PORTS = [23333, 23334, 23335, 23336, 23337];
-const RUNTIME_CONFIG_PATH = path.join(os.homedir(), ".clawd", "runtime.json");
+const DEFAULT_SERVER_PORT = IS_GALAXY ? 23433 : 23333;
+const SERVER_PORTS = Array.from({ length: 5 }, (_, index) => DEFAULT_SERVER_PORT + index);
+const RUNTIME_CONFIG_PATH = path.join(os.homedir(), IS_GALAXY ? ".galaxy" : ".clawd", "runtime.json");
 const HTTP_TIMEOUT_MS = 150;
 const PROCESS_METADATA_TTL_MS = 2000;
 

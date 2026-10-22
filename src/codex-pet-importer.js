@@ -31,7 +31,10 @@ function parseClawdImportUrl(rawUrl) {
   } catch {
     throw new Error("invalid clawd import URL");
   }
-  if (parsed.protocol !== "clawd:") throw new Error("unsupported protocol");
+  const acceptedProtocols = process.env.GALAXY_VARIANT === "1"
+    ? new Set(["galaxy:", "clawd:"])
+    : new Set(["clawd:"]);
+  if (!acceptedProtocols.has(parsed.protocol)) throw new Error("unsupported protocol");
 
   const action = parsed.hostname || parsed.pathname.replace(/^\/+/, "");
   if (action !== "import-pet") throw new Error(`unsupported clawd action: ${action || "(missing)"}`);

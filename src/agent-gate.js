@@ -1,9 +1,11 @@
 "use strict";
+const { isAgentAllowedForProduct } = require("./product-variant");
 
 // Pure gate helpers over a prefs snapshot. Most gates default true for missing
 // snapshot / entry / flag so an install that predates a flag still runs.
 
 function readFlag(snapshot, agentId, flag, defaultValue = true) {
+  if (agentId && !isAgentAllowedForProduct(agentId)) return false;
   if (!agentId) return defaultValue;
   if (!snapshot || typeof snapshot !== "object") return defaultValue;
   const agents = snapshot.agents;

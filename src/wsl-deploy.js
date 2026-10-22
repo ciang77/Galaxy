@@ -434,7 +434,7 @@ async function deployPersistentToWsl(distro, agentId, installScript, entries, op
     emit("prepare-dir", "fail", message);
     return { ok: false, step: "prepare-dir", message };
   }
-  const hooksTargetDir = `${wslHome}/.claude/hooks`;
+  const hooksTargetDir = `${wslHome}/${process.env.GALAXY_VARIANT === "1" ? ".galaxy" : ".claude"}/hooks`;
   const mkdirResult = await execInWsl(distro, `mkdir -p ${quotePosix(hooksTargetDir)}`, options);
   if (!mkdirResult || mkdirResult.code !== 0) {
     const message = (mkdirResult && mkdirResult.stderr) || "mkdir failed";
@@ -449,9 +449,10 @@ async function deployPersistentToWsl(distro, agentId, installScript, entries, op
   emit("run-install", "start");
   const distroEscaped = distro.replace(/'/g, "'\\''");
   const installArgs = getAgentInstallArgs(agentId);
+  const galaxyEnvPrefix = process.env.GALAXY_VARIANT === "1" ? "GALAXY_VARIANT=1 " : "";
   const runResult = await execInWsl(
     distro,
-    `cd ${quotePosix(hooksTargetDir)} && CLAWD_WSL_DISTRO='${distroEscaped}' node ${installScript}${installArgs ? ` ${installArgs}` : ""}`,
+    `cd ${quotePosix(hooksTargetDir)} && ${galaxyEnvPrefix}CLAWD_WSL_DISTRO='${distroEscaped}' node ${installScript}${installArgs ? ` ${installArgs}` : ""}`,
     { ...options, shell: "bash", shellFlags: ["-l", "-i", "-c"], timeout: 60000 }
   );
   if (!runResult || runResult.code !== 0) {
@@ -464,7 +465,7 @@ async function deployPersistentToWsl(distro, agentId, installScript, entries, op
   emit("verify-connectivity", "start");
   const probeResult = await execInWsl(
     distro,
-    `cd ${quotePosix(hooksTargetDir)} && node wsl-connectivity-probe.js`,
+    `cd ${quotePosix(hooksTargetDir)} && ${galaxyEnvPrefix}node wsl-connectivity-probe.js`,
     { ...options, shell: "bash", shellFlags: ["-l", "-i", "-c"], timeout: 20000 }
   );
   const connectivity = parseConnectivityProbe(probeResult && probeResult.stdout);
@@ -583,14 +584,15 @@ async function removePersistentFromWsl(distro, options, emit) {
   const wslHome = await getWslHomeDir(distro, options);
   if (!wslHome) return { ok: false, step: "home", message: `Could not resolve $HOME in WSL ${distro}` };
 
-  const hooksDir = `${wslHome}/.claude/hooks`;
+  const hooksDir = `${wslHome}/${process.env.GALAXY_VARIANT === "1" ? ".galaxy" : ".claude"}/hooks`;
   const agentId = options.agentId || "claude-code";
   emit("remove", "start");
   const uninstallCommand = getAgentUninstallCommand(agentId);
   if (uninstallCommand) {
+    const galaxyEnvPrefix = process.env.GALAXY_VARIANT === "1" ? "GALAXY_VARIANT=1 " : "";
     const uninstallResult = await execInWsl(
       distro,
-      `cd ${quotePosix(hooksDir)} && node ${uninstallCommand}`,
+      `cd ${quotePosix(hooksDir)} && ${galaxyEnvPrefix}node ${uninstallCommand}`,
       { ...options, shell: "bash", shellFlags: ["-l", "-i", "-c"], timeout: 30000 }
     );
     if (!uninstallResult || uninstallResult.code !== 0) {

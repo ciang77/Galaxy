@@ -408,18 +408,20 @@ function buildRemoteHookNodeCommand(nodeBin, scriptName, args = [], options = {}
     throw new Error("buildRemoteHookNodeCommand: nodeBin must be an absolute POSIX path");
   }
   const tail = Array.isArray(args) ? args : [];
-  return [
+  const command = [
     quoteForPosixShellArg(nodeBin),
     remoteHookPath(scriptName, options.hooksDir),
     ...tail.map((arg) => quoteForPosixShellArg(String(arg))),
   ].join(" ");
+  return process.env.GALAXY_VARIANT === "1" ? `env GALAXY_VARIANT=1 ${command}` : command;
 }
 
 function buildRemoteNodeEvalCommand(nodeBin, js) {
   if (!isValidRemoteNodeBin(nodeBin)) {
     throw new Error("buildRemoteNodeEvalCommand: nodeBin must be an absolute POSIX path");
   }
-  return `${quoteForPosixShellArg(nodeBin)} -e ${quoteForPosixShellArg(String(js))}`;
+  const command = `${quoteForPosixShellArg(nodeBin)} -e ${quoteForPosixShellArg(String(js))}`;
+  return process.env.GALAXY_VARIANT === "1" ? `env GALAXY_VARIANT=1 ${command}` : command;
 }
 
 function summarizeStderr(text) {

@@ -311,7 +311,9 @@
 
   function t(key) {
     const dict = STRINGS[getLang()] || STRINGS.en || {};
-    return dict[key] || (STRINGS.en && STRINGS.en[key]) || key;
+    const text = dict[key] || (STRINGS.en && STRINGS.en[key]) || key;
+    return root.settingsAPI && root.settingsAPI.productVariant === "galaxy"
+      ? text.replace(/Clawd on Desk|Clawd/g, "Galaxy") : text;
   }
 
   function escapeHtml(s) {

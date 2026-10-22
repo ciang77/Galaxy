@@ -101,7 +101,9 @@
     if (categorized.unavailable.length > 0) {
       parent.appendChild(buildUnavailableSection(categorized.unavailable));
     }
-    parent.appendChild(buildCustomToolsSection());
+    if (!window.settingsAPI || window.settingsAPI.productVariant !== "galaxy") {
+      parent.appendChild(buildCustomToolsSection());
+    }
   }
 
   // The actionable half of Discover: everything the detector found locally but

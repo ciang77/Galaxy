@@ -52,13 +52,17 @@ function resolveRemoteRuntimeLayout({ runtimeMode, runtimeKey, remoteHome } = {}
   assertRemoteHome(remoteHome);
   const identity = normalizeRemoteRuntimeIdentity({ runtimeMode, runtimeKey });
   const isolated = identity.runtimeMode === REMOTE_RUNTIME_MODE_PROFILE_ISOLATED;
+  const galaxy = process.env.GALAXY_VARIANT === "1";
+  const stateDirectory = galaxy ? ".galaxy" : ".clawd";
   const runtimeRoot = isolated
-    ? path.posix.join(remoteHome, ".clawd", "profiles", identity.runtimeKey)
+    ? path.posix.join(remoteHome, stateDirectory, "profiles", identity.runtimeKey)
     : remoteHome;
   const claudeConfigDir = isolated
     ? path.posix.join(runtimeRoot, "claude")
     : path.posix.join(remoteHome, ".claude");
-  const claudeHooksDir = path.posix.join(claudeConfigDir, "hooks");
+  const claudeHooksDir = galaxy
+    ? path.posix.join(isolated ? path.posix.join(runtimeRoot, "galaxy") : path.posix.join(remoteHome, stateDirectory), "hooks")
+    : path.posix.join(claudeConfigDir, "hooks");
   const codexHome = isolated
     ? path.posix.join(runtimeRoot, "codex")
     : path.posix.join(remoteHome, ".codex");
@@ -66,8 +70,8 @@ function resolveRemoteRuntimeLayout({ runtimeMode, runtimeKey, remoteHome } = {}
     ? path.posix.join(runtimeRoot, "copilot")
     : path.posix.join(remoteHome, ".copilot");
   const clawdStateDir = isolated
-    ? path.posix.join(runtimeRoot, "clawd")
-    : path.posix.join(remoteHome, ".clawd");
+    ? path.posix.join(runtimeRoot, galaxy ? "galaxy" : "clawd")
+    : path.posix.join(remoteHome, stateDirectory);
   const binDir = isolated ? path.posix.join(runtimeRoot, "bin") : null;
   const wrapperEvidenceDir = isolated
     ? path.posix.join(clawdStateDir, "wrapper-evidence")
@@ -105,12 +109,12 @@ function resolveRemoteRuntimeLayout({ runtimeMode, runtimeKey, remoteHome } = {}
     // to create a lock parent before acquiring this runtime-local lease.
     deployLockDir: isolated
       ? path.posix.join(clawdStateDir, "remote-deploy.lock")
-      : path.posix.join(remoteHome, ".clawd-remote-deploy-account-default.lock"),
+      : path.posix.join(remoteHome, `${stateDirectory}-remote-deploy-account-default.lock`),
     deployStagingDir: path.posix.join(clawdStateDir, "remote-deploy-staging"),
     monitorPidFile: path.posix.join(clawdStateDir, "codex-monitor.pid"),
     legacyMonitorPidFile: isolated
       ? null
-      : path.posix.join(remoteHome, ".clawd-codex-monitor.pid"),
+      : path.posix.join(remoteHome, `${stateDirectory}-codex-monitor.pid`),
   };
   return Object.freeze(layout);
 }

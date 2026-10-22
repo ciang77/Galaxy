@@ -256,6 +256,25 @@ function findWindowsArm64InstallerAsset(release) {
 
 function initUpdater(ctx, deps = {}) {
   const app = deps.app || electron.app;
+  if (String(app && typeof app.getName === "function" ? app.getName() : "").toLowerCase() === "galaxy") {
+    const disabled = Object.freeze({ state: "disabled" });
+    return {
+      setupAutoUpdater() {},
+      async checkForUpdates() { return { status: "disabled", available: false }; },
+      getUpdateCheckSnapshot() { return { ...disabled }; },
+      clearUpdateError() {},
+      getUpdateMenuItem() { return { label: "Updates unavailable", enabled: false, visible: false, click() {} }; },
+      getUpdateMenuLabel() { return "Updates unavailable"; },
+      async quietDiscover() { return null; },
+      async handlePendingVersion() { return null; },
+      async reconcilePendingOnStartup() { return null; },
+      onSilentModeExit() {},
+      getPendingUpdateVersion() { return ""; },
+      startUpdateScheduler() {},
+      stopUpdateScheduler() {},
+      isSchedulerRunning() { return false; },
+    };
+  }
   const shell = deps.shell || electron.shell;
   const httpsGet = deps.httpsGetImpl || https.get;
   const execFileFn = deps.execFileImpl || execFile;

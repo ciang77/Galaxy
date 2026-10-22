@@ -149,7 +149,7 @@ function getHistoryDir(options = {}) {
   if (typeof options.historyDir === "string" && options.historyDir) {
     return path.resolve(options.historyDir);
   }
-  return path.join(os.homedir(), ".clawd", HISTORY_DIR_NAME);
+  return path.join(os.homedir(), process.env.GALAXY_VARIANT === "1" ? ".galaxy" : ".clawd", HISTORY_DIR_NAME);
 }
 
 function ensureHistoryDir(options = {}) {
